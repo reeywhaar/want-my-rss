@@ -219,7 +219,7 @@ _CSS issues of Balton Brando_
 ### 0.8
 
 - show original url in extension's popup
-- loose xml parsing from first occurance of `<?xml`
+- loose xml parsing from first occurrence of `<?xml`
 
 ### 0.7
 
