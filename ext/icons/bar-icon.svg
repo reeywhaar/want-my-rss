@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+	<style>
+		:root { color: #000; }
+		@media (prefers-color-scheme: dark) {
+			:root { color: #fbfbfe; }
+		}
+	</style>
 	<circle class="fill" cx="3" cy="30" r="2.5" fill="currentColor" stroke="none"/>
 	<circle class="fill" cx="0" cy="32" r="17" fill="none" stroke="currentColor" stroke-width="2.5"/>
 	<circle class="fill" cx="0" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="2.5"/>
