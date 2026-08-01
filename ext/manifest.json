@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Want My RSS",
-  "version": "0.37",
+  "version": "0.38",
   "description": "RSS features for Firefox",
   "author": "Mikhail Vyrtsev",
   "developer": {

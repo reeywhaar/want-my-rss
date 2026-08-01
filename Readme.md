@@ -21,6 +21,12 @@ Contributions are welcome. Fill issues, make prs!
 
 ## Changelog
 
+### 0.38
+
+_The direction of the eye_
+
+- Fixed icon theme colors. Thanks to [@gaul](https://github.com/gaul)
+
 ### 0.37
 
 _Tu as le droit de tenir le silence_
