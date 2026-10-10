@@ -10,24 +10,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
+
+      - name: "Setup Node"
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: npm
 
       - name: "NPM Install"
-        run: npm install
+        run: npm ci
 
       - name: "Compile"
         run: npm run compile
 
       - name: "web-ext build"
         id: web-ext-build
-        uses: kewisch/action-web-ext@v1.3
+        uses: kewisch/action-web-ext@v2
         with:
           cmd: build
           source: ext
 
       - name: "web-ext sign"
         id: web-ext-sign
-        uses: kewisch/action-web-ext@v1.3
+        uses: kewisch/action-web-ext@v2
         with:
           cmd: sign
           source: ${{ steps.web-ext-build.outputs.target }}
@@ -36,7 +42,7 @@ jobs:
           apiSecret: ${{ secrets.FIREFOX_API_SECRET }}
 
       - name: "Create Release"
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
