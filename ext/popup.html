@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
@@ -6,8 +7,27 @@
 		<title>Subscribe</title>
 		<script src="./js/popup.js" defer type="module"></script>
 		<style>
+			:root {
+				color-scheme: light dark;
+				--text-color: #15141a;
+				--hover-color: rgba(21, 20, 26, 0.07);
+				--label-color: rgba(21, 20, 26, 0.08);
+				--label-text-color: rgba(21, 20, 26, 0.7);
+			}
+
+			@media (prefers-color-scheme: dark) {
+				:root {
+					--text-color: #fbfbfe;
+					--hover-color: rgba(251, 251, 254, 0.1);
+					--label-color: rgba(251, 251, 254, 0.12);
+					--label-text-color: rgba(251, 251, 254, 0.75);
+				}
+			}
+
 			body {
 				max-width: 30rem;
+				margin: 0;
+				font-family: system-ui, sans-serif;
 			}
 
 			.items {
@@ -16,18 +36,36 @@
 
 			.items__item-link {
 				display: block;
-				position: relative;
 				padding: 0.2rem 0.4rem;
-				color: #000;
+				border-radius: 0.25rem;
+				color: var(--text-color);
 				text-decoration: none;
+				overflow-wrap: anywhere;
+			}
+
+			[data-button="toolbar"] .items {
+				padding: 0.5rem;
+			}
+
+			[data-button="toolbar"] .items__item-link {
+				padding: 0.5rem 0.75rem;
+				border-radius: 0.375rem;
 			}
 
 			.items__item-link:hover {
-				color: hsl(200, 70%, 50%);
+				background: var(--hover-color);
 			}
 
-			.items__item + .items__item {
-				border-top: 1px solid rgba(0, 0, 0, 0.1);
+			.items__item-type {
+				display: inline-block;
+				margin-left: 0.35em;
+				padding: 0 0.4em;
+				font-size: 0.75em;
+				line-height: 1.6;
+				vertical-align: 0.1em;
+				color: var(--label-text-color);
+				background: var(--label-color);
+				border-radius: 0.3em;
 			}
 		</style>
 	</head>

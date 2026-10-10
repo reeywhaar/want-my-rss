@@ -2,9 +2,10 @@ import { findParent } from "./utils.js";
 import { Data as PageData } from "./pageReturnType.js";
 import { Storage } from "./storage.js";
 
-const links: PageData[] = JSON.parse(
-  decodeURIComponent(window.location.search.substring(7))
-);
+const params = new URLSearchParams(window.location.search);
+const links: PageData[] = JSON.parse(params.get("links")!);
+// Opened from the toolbar button, which shows it in a roomier panel
+document.documentElement.dataset.button = params.get("button") ?? "addressbar";
 
 const template = document.getElementById("item");
 
@@ -61,7 +62,7 @@ const elements = links.map((el) => {
   link.innerHTML =
     (el.title || el.url) +
     (types[el.type]
-      ? ` <span style="opacity:0.6;">(${types[el.type]})</span>`
+      ? ` <span class="items__item-type">${types[el.type]}</span>`
       : "");
   return content;
 });

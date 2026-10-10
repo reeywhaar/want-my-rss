@@ -18,7 +18,7 @@ async function setAction(tabId: number, data: PageData[]) {
   }
 
   if (found) {
-    browser.browserAction.setPopup({ tabId, popup });
+    browser.browserAction.setPopup({ tabId, popup: `${popup}&button=toolbar` });
     browser.browserAction.setBadgeText({ tabId, text: `${data.length}` });
     browser.browserAction.enable(tabId);
   } else {

@@ -210,6 +210,7 @@ export async function launch({ prefs: extraPrefs = {} } = {}) {
         const popup = new URL(await browser.browserAction.getPopup({ tabId: tab.id }));
         return {
           badge: await browser.browserAction.getBadgeText({ tabId: tab.id }),
+          button: popup.searchParams.get("button"),
           feeds: JSON.parse(popup.searchParams.get("links")),
         };
       })()`

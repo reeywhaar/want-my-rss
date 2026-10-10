@@ -57,6 +57,7 @@ test("toolbar button shows the feeds too", async () => {
   await firefox.newTab(`${base}/feeds.html?toolbar`);
   const button = await waitFor(() => firefox.toolbarButton(`${base}/feeds.html?toolbar`));
   assert.equal(button?.badge, "2");
+  assert.equal(button.button, "toolbar", "popup knows to be roomier");
   assert.deepEqual(
     button.feeds.map((x) => x.url),
     [`${base}/rss.xml`, `${base}/atom.xml`]
