@@ -195,9 +195,43 @@ export async function launch({ prefs: extraPrefs = {} } = {}) {
       })()`
     );
 
+  /**
+   * The toolbar button for the tab currently showing `urlPrefix`:
+   * null when disabled, otherwise its badge and the feeds from its popup.
+   */
+  const toolbarButton = (urlPrefix) =>
+    evaluate(
+      extTab,
+      `(async () => {
+        const tabs = await browser.tabs.query({});
+        const tab = tabs.find((t) => t.url?.startsWith(${JSON.stringify(urlPrefix)}));
+        if (!tab) throw new Error("No tab for " + ${JSON.stringify(urlPrefix)});
+        if (!(await browser.browserAction.isEnabled({ tabId: tab.id }))) return null;
+        const popup = new URL(await browser.browserAction.getPopup({ tabId: tab.id }));
+        return {
+          badge: await browser.browserAction.getBadgeText({ tabId: tab.id }),
+          feeds: JSON.parse(popup.searchParams.get("links")),
+        };
+      })()`
+    );
+
+  /** Evaluates `expression` in an extension page, with WebExtension APIs */
+  const extension = (expression) => evaluate(extTab, expression);
+
   const extUrl = (path) => `moz-extension://${EXT_UUID}/${path}`;
 
-  return { send, evaluate, newTab, navigate, typeText, pageActionFeeds, extUrl, close };
+  return {
+    send,
+    evaluate,
+    newTab,
+    navigate,
+    typeText,
+    pageActionFeeds,
+    toolbarButton,
+    extension,
+    extUrl,
+    close,
+  };
 }
 
 function running(profile) {

@@ -24,6 +24,7 @@ type RawStorageProperties = {
   customFeedReaders: StorageFeedReader[];
   redirectRequests: boolean;
   openInNewTab: boolean;
+  showInAddressBar: boolean;
 };
 
 type RawStorageChange = {
@@ -41,6 +42,7 @@ const storageDefaults: RawStorageProperties = {
   customFeedReaders: [],
   redirectRequests: true,
   openInNewTab: false,
+  showInAddressBar: true,
 };
 
 /**

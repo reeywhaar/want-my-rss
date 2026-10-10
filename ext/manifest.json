@@ -25,6 +25,11 @@
   "web_accessible_resources": [
     "show.html"
   ],
+  "browser_action": {
+    "default_icon": "icons/bar-icon.svg",
+    "default_title": "Subscribe to page",
+    "browser_style": true
+  },
   "page_action": {
     "default_icon": "icons/bar-icon.svg",
     "default_title": "Subscribe to page",

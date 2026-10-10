@@ -136,3 +136,16 @@ test("closes on a backdrop click, without saving", async () => {
   assert.equal(await dialogOpen(), false, "click on the backdrop");
   assert.deepEqual((await saved()).map((x) => x.name), ["Miniflux"]);
 });
+
+test("turns the address bar icon off and on", async () => {
+  await openOptions();
+  const setting = async () => (await run(`browser.storage.sync.get("showInAddressBar")`)).showInAddressBar;
+  const checkbox = `[...document.querySelectorAll(".options label")].find((x) => x.textContent === "Show feed button in address bar").querySelector("input")`;
+  await waitFor(() => run(`${checkbox}.checked`));
+
+  await run(`${checkbox}.click()`);
+  await waitFor(async () => (await setting()) === false);
+
+  await run(`${checkbox}.click()`);
+  await waitFor(async () => (await setting()) === true);
+});

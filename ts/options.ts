@@ -286,6 +286,29 @@ function AdditionalControls({ className = "" }: { className?: string } = {}) {
   header.textContent = "Additional Options";
   root.appendChild(header);
 
+  const addressBarLabel = (() => {
+    const div = document.createElement("div");
+    const label = document.createElement("label");
+    label.title =
+      "The extensions menu button shows the page's feeds either way";
+    div.appendChild(label);
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    Storage.get("showInAddressBar").then((val) => (checkbox.checked = val));
+    label.appendChild(checkbox);
+    checkbox.addEventListener("change", () => {
+      Storage.set("showInAddressBar", checkbox.checked);
+    });
+
+    const span = document.createElement("span");
+    span.textContent = "Show feed button in address bar";
+    label.appendChild(span);
+
+    return div;
+  })();
+  root.appendChild(addressBarLabel);
+
   const interceptLabel = (() => {
     const div = document.createElement("div");
     const label = document.createElement("label");

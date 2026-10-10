@@ -53,6 +53,31 @@ test("hides the icon when the page has no feeds", async () => {
   assert.equal(await firefox.pageActionFeeds(`${base}/no-feeds.html`), null);
 });
 
+test("toolbar button shows the feeds too", async () => {
+  await firefox.newTab(`${base}/feeds.html?toolbar`);
+  const button = await waitFor(() => firefox.toolbarButton(`${base}/feeds.html?toolbar`));
+  assert.equal(button?.badge, "2");
+  assert.deepEqual(
+    button.feeds.map((x) => x.url),
+    [`${base}/rss.xml`, `${base}/atom.xml`]
+  );
+
+  await firefox.newTab(`${base}/no-feeds.html?toolbar`);
+  await sleep(2000);
+  assert.equal(await firefox.toolbarButton(`${base}/no-feeds.html?toolbar`), null, "disabled without feeds");
+});
+
+test("address bar icon can be turned off", async () => {
+  await firefox.extension(`browser.storage.sync.set({ showInAddressBar: false })`);
+  try {
+    await firefox.newTab(`${base}/feeds.html?no-address-bar`);
+    await waitFor(() => firefox.toolbarButton(`${base}/feeds.html?no-address-bar`));
+    assert.equal(await firefox.pageActionFeeds(`${base}/feeds.html?no-address-bar`), null);
+  } finally {
+    await firefox.extension(`browser.storage.sync.remove("showInAddressBar")`);
+  }
+});
+
 test("youtube: feed follows in-app navigation", { timeout: 90000 }, async () => {
   const MKBHD = "https://www.youtube.com/feeds/videos.xml?channel_id=UCBJycsmduvYEL83R_U4JriQ";
   const VERITASIUM = "https://www.youtube.com/feeds/videos.xml?channel_id=UCHnyfMqiRRG1u-2MsSQLbXA";
