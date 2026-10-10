@@ -21,6 +21,22 @@ Contributions are welcome. Fill issues, make prs!
 
 ## Changelog
 
+### 0.39
+
+_A Go Go_
+
+- Added Firefox for Android support (#71)
+- Added toolbar button with the number of feeds on the page, and an option to hide the address bar button (#78)
+- Added "System" feed reader, which opens feeds in the system's default feed app (#85, #23)
+- Added option to hide media in feed previews (#77)
+- Added post frequency and latest post date to the feed preview header (#55)
+- Custom feed readers are now added and edited in a dialog
+- Restyled preferences and feeds popup, with dark mode
+- Fixed Inoreader not finding feeds nobody follows yet (#92, #76)
+- Fixed YouTube feeds when navigating between pages without a reload (#24)
+- Fixed page and feed addresses being inserted as markup into the popup and feed preview
+- Firefox 98 or newer is now required
+
 ### 0.38
 
 _The direction of the eye_

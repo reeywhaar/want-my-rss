@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Want My RSS",
-  "version": "0.38",
+  "version": "0.39",
   "description": "RSS features for Firefox",
   "author": "Mikhail Vyrtsev",
   "developer": {
@@ -44,7 +44,9 @@
       "id": "{4d567245-e70d-466a-bb2f-390fc7fb25c2}",
       "strict_min_version": "98.0",
       "data_collection_permissions": {
-        "required": ["none"]
+        "required": [
+          "none"
+        ]
       }
     },
     "gecko_android": {
