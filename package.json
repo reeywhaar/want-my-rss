@@ -13,7 +13,8 @@
     "data:serve": "env-cmd --silent -- cd testdata && python3 -m http.server",
     "compile": "env-cmd --silent -- tsc",
     "tscheck": "env-cmd --silent -- tsc --noEmit",
-    "tscheck:watch": "env-cmd --silent -- tsc --noEmit --watch"
+    "tscheck:watch": "env-cmd --silent -- tsc --noEmit --watch",
+    "test": "env-cmd --silent -- tsc && node --test --test-timeout=120000 tests/"
   },
   "repository": {
     "type": "git",
