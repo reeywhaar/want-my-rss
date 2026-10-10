@@ -10,7 +10,6 @@
     "run:nightly": "env-cmd --silent -- web-ext run -f nightly -s ext",
     "webext:lint": "env-cmd --silent -- web-ext lint -s ext",
     "webext:build": "env-cmd --silent -- tsc && npm run lint && web-ext build -s ext",
-    "data:serve": "env-cmd --silent -- cd testdata && python3 -m http.server",
     "compile": "env-cmd --silent -- tsc",
     "tscheck": "env-cmd --silent -- tsc --noEmit",
     "tscheck:watch": "env-cmd --silent -- tsc --noEmit --watch",

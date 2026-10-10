@@ -1,7 +1,7 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
-import { createServer } from "node:http";
 import { launch, sleep, waitFor } from "./firefox.mjs";
+import { serve } from "./server.mjs";
 
 const pages = {
   "/feeds.html": `<!doctype html><html><head><title>Feeds</title>
@@ -17,19 +17,14 @@ let server;
 let base;
 
 before(async () => {
-  server = createServer((req, res) => {
-    const body = pages[req.url];
-    res.writeHead(body ? 200 : 404, { "Content-Type": "text/html" });
-    res.end(body ?? "");
-  });
-  await new Promise((r) => server.listen(0, "127.0.0.1", r));
-  base = `http://127.0.0.1:${server.address().port}`;
+  server = await serve(pages);
+  base = server.url;
   firefox = await launch();
 }, { timeout: 60000 });
 
 after(async () => {
   await firefox?.close();
-  server?.close();
+  await server?.close();
 });
 
 test("shows feeds the page advertises", async () => {
@@ -38,6 +33,17 @@ test("shows feeds the page advertises", async () => {
   assert.deepEqual(feeds, [
     { type: "application/rss+xml", url: `${base}/rss.xml`, title: "Posts" },
     { type: "application/atom+xml", url: `${base}/atom.xml`, title: null },
+  ]);
+});
+
+test("shows every feed testdata/index.html links, even broken ones", async () => {
+  await firefox.newTab(`${base}/testdata/index.html`);
+  const feeds = await waitFor(() => firefox.pageActionFeeds(`${base}/testdata/index.html`));
+  assert.deepEqual(feeds, [
+    { type: "application/rss+xml", url: `${base}/testdata/broken.rss`, title: null },
+    { type: "application/atom+xml", url: `${base}/testdata/loose-atom.xml`, title: null },
+    { type: "application/rss+xml", url: `${base}/testdata/missing.xml`, title: null },
+    { type: "application/json", url: `${base}/testdata/broken.json`, title: null },
   ]);
 });
 

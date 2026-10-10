@@ -193,7 +193,9 @@ export async function launch() {
       })()`
     );
 
-  return { send, evaluate, newTab, navigate, typeText, pageActionFeeds, close };
+  const extUrl = (path) => `moz-extension://${EXT_UUID}/${path}`;
+
+  return { send, evaluate, newTab, navigate, typeText, pageActionFeeds, extUrl, close };
 }
 
 function running(profile) {
