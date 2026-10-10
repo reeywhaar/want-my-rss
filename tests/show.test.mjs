@@ -139,3 +139,32 @@ test("hides media behind placeholders, loading it only when asked", async () => 
     await firefox.extension(`browser.storage.sync.remove("hideMedia")`);
   }
 });
+
+test("markup in the feed url stays text", async () => {
+  // Any site can send a user here: clicking a feed link redirects to the preview
+  const payload = (name) => `?x="><b id="pwned">BOLD</b><img src="${server.url}/pwned-${name}.png">`;
+  const injected = (tab) => firefox.evaluate(tab, `!!document.querySelector("#pwned, img[src*=pwned]")`);
+  const loaded = () => server.requests.filter((x) => x.startsWith("/pwned"));
+
+  const missing = `${server.url}/missing${payload("404")}`;
+  const notFound = await preview(`/missing${payload("404")}`);
+  assert.equal(notFound.error, "404");
+  assert.equal(await injected(notFound.tab), false, "404 page");
+  assert.equal(
+    await firefox.evaluate(notFound.tab, `document.querySelector("body > div a").textContent`),
+    missing
+  );
+
+  const feed = `${server.url}/activity.rss${payload("render")}`;
+  const rendered = await preview(`/activity.rss${payload("render")}`);
+  assert.equal(rendered.error, null);
+  assert.equal(await injected(rendered.tab), false, "feed preview");
+  assert.equal(
+    await firefox.evaluate(rendered.tab, `document.querySelector("subscribe-button").getAttribute("link")`),
+    feed,
+    "subscribe still gets the real url"
+  );
+
+  await sleep(500);
+  assert.deepEqual(loaded(), []);
+});

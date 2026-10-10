@@ -55,19 +55,9 @@ export function escapeHtml(input: string): string {
   return input.replace(/[&<>"'`=\/]/g, (s) => entityMap[s]);
 }
 
-/**
- * Escapes html by appending it to temporary element.
- */
-export function safe(input: string): string {
-  const el = document.createElement("div");
-  el.innerHTML = input;
-  return el.innerHTML;
-}
-
 enum EscapeFlag {
   None = 0b00,
   Escape = 0b01,
-  Safe = 0b10,
 }
 
 /**
@@ -107,7 +97,6 @@ export function t<T extends object>(
     let out = action!(el, current!);
     if (!out) return def;
     if (escape & t.escape) out = escapeHtml(out);
-    if (escape & t.safe) out = safe(out);
     return out || def;
   } catch (e) {
     return def;
@@ -118,12 +107,6 @@ export function t<T extends object>(
  * escapes html entities
  */
 t.escape = EscapeFlag.Escape;
-
-/**
- * prerenders dom to avoid breaking html with
- * prematurely closed tags
- */
-t.safe = EscapeFlag.Safe;
 
 export function longest(...strings: string[]): string {
   let longest = strings[0];

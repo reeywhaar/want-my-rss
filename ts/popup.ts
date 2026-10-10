@@ -59,11 +59,14 @@ const elements = links.map((el) => {
   const extURL = browser.runtime.getURL(`show.html?url=${encodeURI(el.url)}`);
   link.href = el.url;
   link.dataset.url = extURL;
-  link.innerHTML =
-    (el.title || el.url) +
-    (types[el.type]
-      ? ` <span class="items__item-type">${types[el.type]}</span>`
-      : "");
+  // Title and url come from the page
+  link.textContent = el.title || el.url;
+  if (types[el.type]) {
+    const type = document.createElement("span");
+    type.className = "items__item-type";
+    type.textContent = types[el.type];
+    link.append(" ", type);
+  }
   return content;
 });
 

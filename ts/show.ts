@@ -37,6 +37,8 @@ async function main(): Promise<void> {
   }
 
   const urlObj = new URL(url);
+  // The url comes from the page address, which any site can link to
+  const escapedUrl = escapeHtml(url);
 
   setExpansion();
 
@@ -66,7 +68,7 @@ async function main(): Promise<void> {
       notFound.innerHTML = `
         <div>
           <h1>404</h1>
-          <p>Feed <a href="${url}">${url}</a> not found</p>
+          <p>Feed <a href="${escapedUrl}">${escapedUrl}</a> not found</p>
         </div>
       `;
       document.body.appendChild(notFound);
@@ -78,7 +80,7 @@ async function main(): Promise<void> {
         <div>
           <h1>Error</h1>
           <p>Error while fetching feed</p>
-          <a href="${url}">${url}</a>
+          <a href="${escapedUrl}">${escapedUrl}</a>
         </div>
       `;
     document.body.appendChild(error);
@@ -108,7 +110,7 @@ async function main(): Promise<void> {
           <p>Error while parsing feed: <span style="color: red">${escapeHtml(
             e instanceof Error ? e.message : String(e)
           )}</span></p>
-          <a href="${url}">${url}</a>
+          <a href="${escapedUrl}">${escapedUrl}</a>
         </div>
       `;
     document.body.appendChild(error);
@@ -238,6 +240,7 @@ async function render({
   data: RSSData;
   url: string;
 }): Promise<string> {
+  const escapedUrl = escapeHtml(url);
   const store = await Storage.getAll();
   return `
     <div class="controls body__controls">
@@ -256,12 +259,12 @@ async function render({
         store.useRelativeTime === true ? "checked" : ""
       }></label>
       <div class="controls__spacer"></div>
-      <subscribe-button class="header__subscribe" link="${url}"></subscribe-button>
+      <subscribe-button class="header__subscribe" link="${escapedUrl}"></subscribe-button>
     </div>
     <header class="header body__header">
       ${vif(
         () => data.image,
-        (url) => `<img class="header__image" src="${url}"/>`
+        (url) => `<img class="header__image" src="${escapeHtml(url)}"/>`
       )}
       <div class="header__top">
         ${vif(
@@ -283,9 +286,7 @@ async function render({
         )}
       </div>
       <div class="header__links">
-        <a class="header__original-url" href="${url}">${decodeURI(
-          url
-        )}</a><a class="header__original-url-source" href="view-source:${url}">source</a>
+        <a class="header__original-url" href="${escapedUrl}">${escapeHtml(decodeURI(url))}</a><a class="header__original-url-source" href="view-source:${escapedUrl}">source</a>
       </div>
       ${vif(
         () => t(data, ".description", null, t.escape),
@@ -306,7 +307,7 @@ async function render({
                 <header class="item__header">
                   ${vif(
                     () => item.image,
-                    (url) => `<img class="item__image" src="${url}"/>`
+                    (url) => `<img class="item__image" src="${escapeHtml(url)}"/>`
                   )}
                   <h2 class="item__title">
                     ${vif(

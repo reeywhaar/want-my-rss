@@ -79,6 +79,23 @@ test("address bar icon can be turned off", async () => {
   }
 });
 
+test("popup shows titles from the page as text", async () => {
+  const links = [
+    { type: "application/rss+xml", url: `${base}/rss.xml`, title: `Posts <b id="pwned">BOLD</b><img src="${base}/pwned-popup.png">` },
+  ];
+  const tab = await firefox.newTab(firefox.extUrl(`popup.html?links=${encodeURIComponent(JSON.stringify(links))}`));
+  await waitFor(() => firefox.evaluate(tab, `!!document.querySelector(".items__item-link")`));
+  assert.deepEqual(
+    await firefox.evaluate(tab, `({
+      text: document.querySelector(".items__item-link").textContent,
+      injected: !!document.querySelector("#pwned, img"),
+    })`),
+    { text: `${links[0].title} rss`, injected: false }
+  );
+  await sleep(500);
+  assert.deepEqual(server.requests.filter((x) => x.startsWith("/pwned")), []);
+});
+
 test("youtube: feed follows in-app navigation", { timeout: 90000 }, async () => {
   const MKBHD = "https://www.youtube.com/feeds/videos.xml?channel_id=UCBJycsmduvYEL83R_U4JriQ";
   const VERITASIUM = "https://www.youtube.com/feeds/videos.xml?channel_id=UCHnyfMqiRRG1u-2MsSQLbXA";
