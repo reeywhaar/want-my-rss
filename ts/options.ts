@@ -226,7 +226,7 @@ function CustomFeedReaders({
   root.className = "feed-readers";
 
   const header = document.createElement("h1");
-  header.textContent = "Custom Feeds";
+  header.textContent = "Custom Feed Readers";
   root.appendChild(header);
 
   const list = document.createElement("div");
