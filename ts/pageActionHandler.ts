@@ -51,4 +51,12 @@ export function attach(): void {
 
   browser.tabs.onActivated.addListener((info) => handler(info.tabId));
   browser.tabs.onUpdated.addListener((id) => handler(id));
+  // Sent by page script on sites that navigate without reloading
+  browser.runtime.onMessage.addListener(
+    (message: { action?: string }, sender: browser.runtime.MessageSender) => {
+      if (message.action === "detect-feeds" && sender.tab?.id !== undefined) {
+        handler(sender.tab.id);
+      }
+    }
+  );
 }
