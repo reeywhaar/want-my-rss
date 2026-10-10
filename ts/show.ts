@@ -121,8 +121,10 @@ async function main(): Promise<void> {
     () => data.title || data.description,
     (description) => (document.title = description)
   );
+  mediaHidden = await Storage.get("hideMedia");
   const fr = document.createElement("template");
   fr.innerHTML = await render({ data, url });
+  if (mediaHidden) hideMedia(fr.content.querySelector("#items")!);
   container.append(fr.content);
 
   const sortArticles = (sort: Sorting) => {
@@ -140,6 +142,12 @@ async function main(): Promise<void> {
   if (sort !== "none") sortArticles(sort);
 
   Storage.subscribe((changes) => {
+    if (changes.hasOwnProperty("hideMedia")) {
+      mediaHidden = changes.hideMedia!.newValue;
+      const items = document.getElementById("items")!;
+      if (mediaHidden) hideMedia(items);
+      else items.querySelectorAll(".media-placeholder").forEach(showMedia);
+    }
     if (changes.hasOwnProperty("useRelativeTime")) {
       document.querySelectorAll("time[is='relative-date']").forEach((el) => {
         (el as HTMLElement).dataset.relative =
@@ -153,6 +161,14 @@ async function main(): Promise<void> {
     .addEventListener("change", async (e) => {
       Storage.set("useRelativeTime", (e.target as HTMLInputElement).checked);
     });
+
+  document.addEventListener("click", (e) => {
+    const placeholder = (e.target as Element).closest?.(".media-placeholder");
+    if (!placeholder) return;
+    // It may sit in a link that held the image
+    e.preventDefault();
+    showMedia(placeholder);
+  });
 
   document
     .querySelector(".items-sort__select")!
@@ -170,6 +186,37 @@ async function main(): Promise<void> {
 
   window.addEventListener("scroll", resizeScrollHandler);
   window.addEventListener("resize", resizeScrollHandler);
+}
+
+const MEDIA_SELECTOR = "img, picture, video, audio, iframe, embed, object";
+
+/** Media swapped out by hideMedia, by the placeholder standing in for it */
+const hiddenMedia = new WeakMap<Element, Element>();
+
+let mediaHidden = false;
+
+/**
+ * Swaps media under `root` for "Show media" placeholders. Done on markup
+ * that isn't in the page yet, it keeps the media from loading at all.
+ */
+function hideMedia(root: ParentNode) {
+  for (const el of Array.from(root.querySelectorAll(MEDIA_SELECTOR))) {
+    // Goes with the media around it, like an img in a picture
+    if (el.parentElement?.closest(MEDIA_SELECTOR)) continue;
+    const placeholder = document.createElement("button");
+    placeholder.type = "button";
+    placeholder.className = el.classList.contains("item__image")
+      ? "media-placeholder media-placeholder--thumbnail"
+      : "media-placeholder";
+    placeholder.textContent = "Show media";
+    hiddenMedia.set(placeholder, el);
+    el.replaceWith(placeholder);
+  }
+}
+
+function showMedia(placeholder: Element) {
+  const media = hiddenMedia.get(placeholder);
+  if (media) placeholder.replaceWith(media);
 }
 
 function renderActivity(data: RSSData, useRelativeTime: boolean): string {
@@ -697,7 +744,11 @@ function unwrapVisibleContent(item: HTMLDivElement, rssitems: RSSDataItem[]) {
   const id = contentEl.dataset.content;
   const data = rssitems.find((x) => x.id === id);
   if (!data) return;
-  contentEl.innerHTML = data.content ?? "";
+  // Parsed in a template, where nothing loads until it's in the page
+  const template = document.createElement("template");
+  template.innerHTML = data.content ?? "";
+  if (mediaHidden) hideMedia(template.content);
+  contentEl.replaceChildren(template.content);
   delete contentEl.dataset.content;
 }
 

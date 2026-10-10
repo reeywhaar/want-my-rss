@@ -25,6 +25,7 @@ type RawStorageProperties = {
   redirectRequests: boolean;
   openInNewTab: boolean;
   showInAddressBar: boolean;
+  hideMedia: boolean;
 };
 
 type RawStorageChange = {
@@ -43,6 +44,7 @@ const storageDefaults: RawStorageProperties = {
   redirectRequests: true,
   openInNewTab: false,
   showInAddressBar: true,
+  hideMedia: false,
 };
 
 /**

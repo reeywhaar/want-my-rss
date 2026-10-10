@@ -149,3 +149,16 @@ test("turns the address bar icon off and on", async () => {
   await run(`${checkbox}.click()`);
   await waitFor(async () => (await setting()) === true);
 });
+
+test("turns hiding media on and off", async () => {
+  await openOptions();
+  const setting = async () => (await run(`browser.storage.sync.get("hideMedia")`)).hideMedia;
+  const checkbox = `[...document.querySelectorAll(".options label")].find((x) => x.textContent === "Hide media in feed previews").querySelector("input")`;
+  assert.equal(await run(`${checkbox}.checked`), false, "off by default");
+
+  await run(`${checkbox}.click()`);
+  await waitFor(async () => (await setting()) === true);
+
+  await run(`${checkbox}.click()`);
+  await waitFor(async () => (await setting()) === false);
+});

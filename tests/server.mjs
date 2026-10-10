@@ -1,4 +1,5 @@
-// Serves inline pages and the files in testdata/ (under /testdata/) on a random local port.
+// Serves inline pages and the files in testdata/ (under /testdata/) on a random local port,
+// and logs every request path.
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
@@ -9,10 +10,13 @@ const TYPES = {
   ".rss": "application/rss+xml",
   ".xml": "application/xml",
   ".json": "application/json",
+  ".png": "image/png",
 };
 
 export async function serve(pages = {}) {
+  const requests = [];
   const server = createServer(async (req, res) => {
+    requests.push(req.url);
     const path = new URL(req.url, "http://localhost").pathname;
     let body = pages[path];
     if (body === undefined && path.startsWith("/testdata/")) {
@@ -32,6 +36,8 @@ export async function serve(pages = {}) {
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   return {
     url: `http://127.0.0.1:${server.address().port}`,
+    /** Paths requested so far, with their query */
+    requests,
     close: () =>
       new Promise((r) => {
         server.close(r);

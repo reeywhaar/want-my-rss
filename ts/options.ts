@@ -353,6 +353,29 @@ function AdditionalControls({ className = "" }: { className?: string } = {}) {
   })();
   root.appendChild(newTabLabel);
 
+  const hideMediaLabel = (() => {
+    const div = document.createElement("div");
+    const label = document.createElement("label");
+    label.title =
+      "Images, video and audio in feed previews show as placeholders until clicked";
+    div.appendChild(label);
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    Storage.get("hideMedia").then((val) => (checkbox.checked = val));
+    label.appendChild(checkbox);
+    checkbox.addEventListener("change", () => {
+      Storage.set("hideMedia", checkbox.checked);
+    });
+
+    const span = document.createElement("span");
+    span.textContent = "Hide media in feed previews";
+    label.appendChild(span);
+
+    return div;
+  })();
+  root.appendChild(hideMediaLabel);
+
   const resetButton = document.createElement("button");
   resetButton.className = "button button--danger options__reset-button";
   resetButton.textContent = "Reset";

@@ -1,6 +1,6 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
-import { launch, waitFor } from "./firefox.mjs";
+import { launch, sleep, waitFor } from "./firefox.mjs";
 import { serve } from "./server.mjs";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -20,6 +20,17 @@ let server;
 
 before(async () => {
   server = await serve(pages);
+  // A 1x1 png, and a feed whose items show it in all the ways a feed can
+  pages["/pixel.png"] = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+    "base64"
+  );
+  pages["/media.rss"] = `<?xml version="1.0"?><rss version="2.0"><channel><title>Media</title>
+    <item><title>With media</title>
+      <description><![CDATA[<p>Text <img src="${server.url}/pixel.png?inline"></p>
+        <a href="${server.url}/elsewhere"><img src="${server.url}/pixel.png?linked"></a>
+        <figure><img src="${server.url}/pixel.png?figure"><figcaption>Caption</figcaption></figure>]]></description>
+    </item></channel></rss>`;
   firefox = await launch();
 }, { timeout: 60000 });
 
@@ -49,7 +60,7 @@ async function preview(path) {
         };
       })()`
     );
-  return (await waitFor(read)) ?? { title: null, items: [], error: "nothing rendered" };
+  return { tab, ...((await waitFor(read)) ?? { title: null, items: [], error: "nothing rendered" }) };
 }
 
 test("renders RSS with junk before the XML declaration (#7)", async () => {
@@ -90,4 +101,41 @@ test("no activity line without item dates", async () => {
   const { activity, items } = await preview("/testdata/loose-atom.xml");
   assert.equal(items.length, 125);
   assert.equal(activity, null);
+});
+
+test("hides media behind placeholders, loading it only when asked", async () => {
+  await firefox.extension(`browser.storage.sync.set({ hideMedia: true })`);
+  try {
+    const { tab } = await preview("/media.rss");
+    const media = () =>
+      firefox.evaluate(tab, `({
+        images: document.querySelectorAll("#items img").length,
+        placeholders: document.querySelectorAll("#items .media-placeholder").length,
+      })`);
+    const loaded = () => server.requests.filter((x) => x.startsWith("/pixel.png")).sort();
+
+    await waitFor(async () => (await media()).placeholders === 3);
+    assert.deepEqual(await media(), { images: 0, placeholders: 3 });
+    await sleep(500);
+    assert.deepEqual(loaded(), [], "nothing hidden was downloaded");
+    assert.equal(
+      await firefox.evaluate(tab, `document.querySelector("figcaption")?.textContent`),
+      "Caption",
+      "text around media stays"
+    );
+
+    // The one in a link shows up instead of following the link
+    await firefox.evaluate(tab, `document.querySelector("#items a .media-placeholder").click()`);
+    assert.deepEqual(await media(), { images: 1, placeholders: 2 });
+    assert.match(await firefox.evaluate(tab, "location.href"), /show\.html/);
+    await waitFor(() => loaded().length === 1);
+    assert.deepEqual(loaded(), ["/pixel.png?linked"]);
+
+    // Turning it off in preferences brings back the rest
+    await firefox.extension(`browser.storage.sync.set({ hideMedia: false })`);
+    await waitFor(async () => (await media()).placeholders === 0);
+    assert.deepEqual(await media(), { images: 3, placeholders: 0 });
+  } finally {
+    await firefox.extension(`browser.storage.sync.remove("hideMedia")`);
+  }
 });
