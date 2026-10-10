@@ -26,7 +26,7 @@ export const FeedReaders: FeedReader[] = [
     id: "inoreader",
     name: "Inoreader",
     link: (feed) =>
-      `https://www.inoreader.com/feed/${encodeURIComponent(feed)}`,
+      `https://www.inoreader.com/search/feeds/${encodeURIComponent(feed)}`,
     favicon: "inoreader.ico",
   },
   {
