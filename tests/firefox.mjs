@@ -32,7 +32,8 @@ export async function waitFor(fn, { timeout = 20000, interval = 500 } = {}) {
   return value;
 }
 
-export async function launch() {
+/** `prefs` are extra Firefox preferences for this run */
+export async function launch({ prefs: extraPrefs = {} } = {}) {
   const profile = await mkdtemp(join(tmpdir(), "wmr-firefox-"));
   const prefs = {
     "extensions.webextensions.uuids": JSON.stringify({ [ADDON_ID]: EXT_UUID }),
@@ -40,6 +41,7 @@ export async function launch() {
     "datareporting.policy.dataSubmissionEnabled": false,
     "toolkit.telemetry.reportingpolicy.firstRun": false,
     "browser.startup.homepage_override.mstone": "ignore",
+    ...extraPrefs,
   };
   await writeFile(
     join(profile, "user.js"),

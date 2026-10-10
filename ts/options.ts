@@ -16,7 +16,6 @@ function TextInput({
   el.className = "text-input " + className;
   el.type = "text";
   el.value = value;
-  if (className) el.className = className;
   return el;
 }
 
@@ -42,222 +41,241 @@ function ImagePlaceholder({
   return el;
 }
 
-type FeedItemElement = HTMLElement & {
-  toData: () => StorageFeedReader;
-  clear: () => void;
+type FeedReaderDialogElement = HTMLDialogElement & {
+  /** Opens the dialog, empty for a new reader or filled with one to edit */
+  edit: (reader?: StorageFeedReader) => void;
 };
 
-function FeedItem({
-  id = "",
-  url = "",
-  name = "",
-  img = "",
-  onRemove = null,
-  className = "",
+function FeedReaderDialog({
+  onSave,
 }: {
-  id?: string;
-  url?: string;
-  name?: string;
-  img?: string;
-  onRemove?: ((e: Event, el: HTMLElement) => void) | null;
-  className?: string;
-} = {}): FeedItemElement {
-  const el = document.createElement("div") as unknown as FeedItemElement;
-  el.className = "feed-item " + className;
+  onSave: (reader: StorageFeedReader) => void;
+}): FeedReaderDialogElement {
+  const dialog = document.createElement(
+    "dialog"
+  ) as FeedReaderDialogElement;
+  dialog.className = "feed-dialog";
 
-  const e_id = document.createElement("input");
-  e_id.type = "hidden";
-  e_id.value = id;
-  el.appendChild(e_id);
+  const form = document.createElement("form");
+  form.method = "dialog";
+  dialog.appendChild(form);
 
-  const e_name = TextInput({ value: name, className: "feed-item__name" });
-  e_name.placeholder = "Name";
-  el.appendChild(e_name);
+  const title = document.createElement("h2");
+  title.className = "feed-dialog__title";
+  form.appendChild(title);
 
-  const e_url = TextInput({ value: url, className: "feed-item__url" });
-  e_url.placeholder = "URL (https://examplereader.com/?sub=%s)";
-  el.appendChild(e_url);
+  const Field = (label: string, input: HTMLElement, ...rest: HTMLElement[]) => {
+    const el = document.createElement("label");
+    el.className = "feed-dialog__field";
+    const span = document.createElement("span");
+    span.className = "feed-dialog__label";
+    span.textContent = label;
+    el.append(span, input, ...rest);
+    form.appendChild(el);
+  };
 
-  const e_imgurl = TextInput({ value: img, className: "feed-item__imgurl" });
-  e_imgurl.placeholder = "Favicon URL (https://examplereader.com/favicon.ico)";
-  el.appendChild(e_imgurl);
+  const e_name = TextInput({ className: "feed-dialog__input" });
+  e_name.placeholder = "My reader";
+  e_name.required = true;
+  Field("Name", e_name);
 
-  const e_img = ImagePlaceholder({
-    url: img || "./providers-icons/noname.svg",
-    className: "feed-item__img",
-  });
-  el.appendChild(e_img);
+  const e_url = TextInput({ className: "feed-dialog__input" });
+  e_url.placeholder = "https://examplereader.com/?sub=%s";
+  e_url.required = true;
+  const help = document.createElement("span");
+  help.className = "feed-dialog__help";
+  help.innerHTML =
+    "<code>%s</code> is replaced with the escaped feed url, <code>%r</code> with the raw one";
+  Field("Subscribe URL", e_url, help);
 
-  e_imgurl.addEventListener("input", (e) => {
-    e_img.setURL(
-      (e.target as HTMLInputElement).value || "./providers-icons/noname.svg"
+  const favicon = document.createElement("div");
+  favicon.className = "feed-dialog__favicon";
+  const e_img = ImagePlaceholder({ className: "feed-dialog__img" });
+  const e_imgurl = TextInput({ className: "feed-dialog__input" });
+  e_imgurl.placeholder = "https://examplereader.com/favicon.ico";
+  favicon.append(e_img, e_imgurl);
+  Field("Favicon URL", favicon);
+
+  const buttons = document.createElement("div");
+  buttons.className = "feed-dialog__buttons";
+  form.appendChild(buttons);
+
+  const e_cancel = document.createElement("button");
+  e_cancel.type = "button";
+  e_cancel.className = "button";
+  e_cancel.textContent = "Cancel";
+  e_cancel.addEventListener("click", () => dialog.close());
+  buttons.appendChild(e_cancel);
+
+  const e_save = document.createElement("button");
+  e_save.type = "submit";
+  e_save.className = "button button--primary";
+  e_save.textContent = "Save";
+  buttons.appendChild(e_save);
+
+  const validateURL = () => {
+    const url = e_url.value.trim();
+    e_url.setCustomValidity(
+      url && !/%[sr]/.test(url) ? "URL must contain %s or %r" : ""
     );
+  };
+  e_url.addEventListener("input", validateURL);
+  e_imgurl.addEventListener("input", () => e_img.setURL(e_imgurl.value));
+
+  // Close on a click on the backdrop. Both ends of the click have to be there,
+  // so a text selection dragged out of an input doesn't close it.
+  const onBackdrop = (e: MouseEvent) => {
+    if (e.target !== dialog) return false;
+    const rect = dialog.getBoundingClientRect();
+    return (
+      e.clientX < rect.left ||
+      e.clientX > rect.right ||
+      e.clientY < rect.top ||
+      e.clientY > rect.bottom
+    );
+  };
+  let pressedOnBackdrop = false;
+  dialog.addEventListener("mousedown", (e) => {
+    pressedOnBackdrop = onBackdrop(e);
+  });
+  dialog.addEventListener("click", (e) => {
+    if (pressedOnBackdrop && onBackdrop(e)) dialog.close();
+    pressedOnBackdrop = false;
   });
 
-  if (onRemove) {
-    const e_remove = document.createElement("button");
-    e_remove.className = "feed-item__remove-button";
-    e_remove.textContent = "remove";
-    e_remove.addEventListener("click", (e) => {
-      if (e.target !== (e as any).explicitOriginalTarget) return;
-      onRemove.bind(e_remove)(e, el);
+  let id = "";
+
+  form.addEventListener("submit", () => {
+    onSave({
+      id,
+      name: e_name.value.trim(),
+      url: e_url.value.trim(),
+      img: e_imgurl.value.trim(),
     });
-    el.appendChild(e_remove);
-  }
+  });
 
-  el.toData = () => {
-    return {
-      id: e_id.value,
-      name: e_name.value,
-      url: e_url.value,
-      img: e_imgurl.value,
-    };
+  dialog.edit = (reader) => {
+    id = reader?.id ?? "";
+    title.textContent = reader ? "Edit feed reader" : "Add feed reader";
+    e_name.value = reader?.name ?? "";
+    e_url.value = reader?.url ?? "";
+    e_imgurl.value = reader?.img ?? "";
+    e_img.setURL(e_imgurl.value);
+    validateURL();
+    dialog.showModal();
   };
 
-  el.clear = () => {
-    e_name.value = "";
-    e_url.value = "";
-    e_imgurl.value = "";
-    e_img.setURL("");
-  };
+  return dialog;
+}
+
+function FeedReaderRow({
+  reader,
+  onEdit,
+  onRemove,
+}: {
+  reader: StorageFeedReader;
+  onEdit: () => void;
+  onRemove: () => void;
+}): HTMLElement {
+  const el = document.createElement("div");
+  el.className = "feed-reader";
+
+  el.appendChild(
+    ImagePlaceholder({
+      url: reader.img || "./providers-icons/noname.svg",
+      className: "feed-reader__img",
+    })
+  );
+
+  const info = document.createElement("div");
+  info.className = "feed-reader__info";
+  el.appendChild(info);
+
+  const name = document.createElement("div");
+  name.className = "feed-reader__name";
+  name.textContent = reader.name;
+  info.appendChild(name);
+
+  const url = document.createElement("div");
+  url.className = "feed-reader__url";
+  url.textContent = reader.url;
+  url.title = reader.url;
+  info.appendChild(url);
+
+  const edit = document.createElement("button");
+  edit.className = "button";
+  edit.textContent = "Edit";
+  edit.addEventListener("click", onEdit);
+  el.appendChild(edit);
+
+  const remove = document.createElement("button");
+  remove.className = "button button--danger";
+  remove.textContent = "Remove";
+  remove.addEventListener("click", onRemove);
+  el.appendChild(remove);
 
   return el;
 }
 
-type FeedFormElement = HTMLFormElement & {
-  setNotice: (notice: string) => void;
-  setItems: (items: StorageFeedReader[]) => void;
-  reset: () => void;
-};
-
-function FeedForm({
-  items = [],
-  onSave = null,
+function CustomFeedReaders({
+  readers,
 }: {
-  items?: StorageFeedReader[];
-  onSave?: ((items: StorageFeedReader[]) => void) | null;
-} = {}): FeedFormElement {
-  const form = document.createElement("form") as FeedFormElement;
-  form.className = "feeds-form";
+  readers: StorageFeedReader[];
+}): HTMLElement {
+  const root = document.createElement("div");
+  root.className = "feed-readers";
 
   const header = document.createElement("h1");
   header.textContent = "Custom Feeds";
-  form.appendChild(header);
+  root.appendChild(header);
 
-  const description = document.createElement("p");
-  description.innerHTML =
-    "%s will be interpolated into escaped feed url<br/>%r will be interpolated into raw feed url";
-  description.className = "feeds-form__description";
-  form.appendChild(description);
+  const list = document.createElement("div");
+  list.className = "feed-readers__list";
+  root.appendChild(list);
 
-  const items_container = document.createElement("div");
-  form.appendChild(items_container);
+  const save = async (items: StorageFeedReader[]) => {
+    readers = items;
+    await Storage.set("customFeedReaders", readers);
+    render();
+  };
 
-  let e_items: FeedItemElement[] = [];
+  const dialog = FeedReaderDialog({
+    onSave: (reader) => {
+      if (reader.id) {
+        save(readers.map((x) => (x.id === reader.id ? reader : x)));
+        return;
+      }
+      const ids = readers.map((x) => x.id);
+      let id = randomID();
+      while (ids.includes(id)) id = randomID();
+      save([...readers, { ...reader, id }]);
+    },
+  });
+  root.appendChild(dialog);
 
-  form.setItems = (items) => {
-    e_items.forEach((x) => x.remove());
-    e_items = items.map((x) =>
-      FeedItem({
-        id: x.id,
-        url: x.url,
-        name: x.name,
-        img: x.img,
-        onRemove: (_, el) => {
-          el.remove();
-        },
-        className: "feeds-form__item feeds-form__store-item",
-      })
+  const render = () => {
+    list.replaceChildren(
+      ...readers.map((reader) =>
+        FeedReaderRow({
+          reader,
+          onEdit: () => dialog.edit(reader),
+          onRemove: () => {
+            if (!confirm(`Remove ${reader.name}?`)) return;
+            save(readers.filter((x) => x.id !== reader.id));
+          },
+        })
+      )
     );
-    e_items.forEach((x) => items_container.appendChild(x));
   };
+  render();
 
-  form.setItems(items);
+  const add = document.createElement("button");
+  add.className = "button button--primary feed-readers__add";
+  add.textContent = "Add feed reader";
+  add.addEventListener("click", () => dialog.edit());
+  root.appendChild(add);
 
-  const e_new = FeedItem({
-    className: "feeds-form__item feeds-form__new-item",
-  });
-  form.appendChild(e_new);
-
-  const e_footer = document.createElement("div");
-  e_footer.className = "feeds-form__footer";
-  form.appendChild(e_footer);
-
-  const e_submit = document.createElement("input");
-  e_submit.type = "submit";
-  e_submit.value = "save";
-  e_footer.appendChild(e_submit);
-
-  e_footer.appendChild(document.createElement("div"));
-
-  const e_notice = document.createElement("div");
-  e_footer.appendChild(e_notice);
-
-  let noticeCounter = 0;
-  form.setNotice = (e) => {
-    e_notice.textContent = e;
-    ++noticeCounter;
-    setTimeout(() => {
-      --noticeCounter;
-      if (noticeCounter === 0) {
-        e_notice.textContent = "";
-      }
-    }, 3000);
-  };
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const newItem = e_new.toData();
-    if (newItem.name || newItem.url) {
-      if (!newItem.name) {
-        form.setNotice("Name required");
-        return;
-      }
-      if (!newItem.url) {
-        form.setNotice("URL required");
-        return;
-      }
-    }
-    let data: StorageFeedReader[];
-    try {
-      data = (
-        Array.from(
-          form.querySelectorAll(".feeds-form__store-item")
-        ) as FeedItemElement[]
-      ).map((x) => {
-        const data = x.toData();
-        if (!data.name) throw new Error("Name required");
-        if (!data.url) throw new Error("URL required");
-        return data;
-      });
-    } catch (e) {
-      if (e instanceof Error) {
-        form.setNotice(e.message);
-      } else {
-        form.setNotice("Unknown error");
-      }
-      return;
-    }
-    if (newItem.name || newItem.url) {
-      const newID = (() => {
-        let id = randomID();
-        const ids = data.map((x) => x.id);
-        while (ids.indexOf(id) !== -1) {
-          id = randomID();
-        }
-        return id;
-      })();
-      newItem.id = newID;
-      data.push(newItem);
-    }
-    onSave && onSave(data);
-  });
-
-  form.reset = () => {
-    e_new.clear();
-  };
-
-  return form;
+  return root;
 }
 
 function AdditionalControls({ className = "" }: { className?: string } = {}) {
@@ -313,7 +331,7 @@ function AdditionalControls({ className = "" }: { className?: string } = {}) {
   root.appendChild(newTabLabel);
 
   const resetButton = document.createElement("button");
-  resetButton.className = "options__reset-button";
+  resetButton.className = "button button--danger options__reset-button";
   resetButton.textContent = "Reset";
   resetButton.title = "Reset all options, and remove all custom feed readers";
   resetButton.addEventListener("click", () => {
@@ -327,17 +345,8 @@ function AdditionalControls({ className = "" }: { className?: string } = {}) {
 }
 
 async function main() {
-  const feeds = await Storage.get("customFeedReaders");
-  const form = FeedForm({
-    items: feeds,
-    onSave: (items) => {
-      Storage.set("customFeedReaders", items);
-      form.setItems(items);
-      form.setNotice("Saved!");
-      form.reset();
-    },
-  });
-  document.body.appendChild(form);
+  const readers = await Storage.get("customFeedReaders");
+  document.body.appendChild(CustomFeedReaders({ readers }));
   document.body.appendChild(AdditionalControls());
 }
 
