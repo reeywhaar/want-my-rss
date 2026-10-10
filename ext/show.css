@@ -12,6 +12,7 @@
 
   --header-source-opacity: 0.6;
   --header-description-opacity: 0.6;
+  --header-activity-opacity: 0.45;
 
   --main-url-color: #000;
   --main-url-underline-color: rgba(0, 0, 0, 0.001);
@@ -177,6 +178,12 @@ a.header__main-url:visited:hover {
   opacity: var(--header-description-opacity);
   font-size: 0.8em;
   margin: 0;
+}
+
+.header__activity {
+  opacity: var(--header-activity-opacity);
+  font-size: 0.7em;
+  margin: 0.2em 0 0;
 }
 
 /* main */
@@ -434,6 +441,7 @@ html[data-theme="night"] {
 
   --header-source-opacity: 0.9;
   --header-description-opacity: 0.9;
+  --header-activity-opacity: 0.6;
 
   --main-url-color: var(--main-color);
   --main-url-underline-color: rgba(255, 255, 255, 0.001);

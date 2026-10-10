@@ -13,6 +13,7 @@ import {
 } from "./utils.js";
 import { RSSData, RSSDataItem } from "./rssDataType.js";
 import { ThemeSwitcherFactory } from "./themeSwitcher.js";
+import { feedActivity } from "./activity.js";
 
 const DEFAULT_CHARSET = "utf-8";
 
@@ -171,6 +172,18 @@ async function main(): Promise<void> {
   window.addEventListener("resize", resizeScrollHandler);
 }
 
+function renderActivity(data: RSSData, useRelativeTime: boolean): string {
+  const { frequency, latest } = feedActivity(data.items.map((x) => x.date));
+  if (!latest) return "";
+  const parts = [
+    frequency,
+    `Latest: <time is="relative-date" data-relative="${useRelativeTime}" datetime="${latest}" title="${latest}">${latest}</time>`,
+  ];
+  return `<p class="header__activity">${parts
+    .filter((x) => x)
+    .join(" · ")}</p>`;
+}
+
 async function render({
   data,
   url,
@@ -231,6 +244,7 @@ async function render({
         () => t(data, ".description", null, t.escape),
         (description) => `<p class="header__description">${description}</p>`
       )}
+      ${renderActivity(data, store.useRelativeTime)}
     </header>
     <main class="main body__main">
       <div class="items" id="items">

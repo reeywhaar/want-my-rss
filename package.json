@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "[Mozilla Addons](https://addons.mozilla.org/en-US/firefox/addon/want-my-rss/)",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "clean": "rm -rf ext/js",
     "watch": "env-cmd --silent -- tsc --watch",
