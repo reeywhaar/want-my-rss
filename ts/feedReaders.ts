@@ -1,6 +1,8 @@
 export type FeedReader = {
   id: string;
   name: string;
+  /** Shown under the name in the reader list */
+  description?: string;
   link: (feed: string) => string;
   favicon: string;
 };
@@ -62,5 +64,13 @@ export const FeedReaders: FeedReader[] = [
     link: (feed) =>
       `https://www.nooshub.com/me/feeds/new?url=${encodeURIComponent(feed)}`,
     favicon: "nooshub.ico",
+  },
+  {
+    // Opens whichever app the system has for feed: links
+    id: "system",
+    name: "System",
+    description: "System's default app",
+    link: (feed) => `feed:${feed}`,
+    favicon: "system.svg",
   },
 ];

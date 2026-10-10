@@ -39,10 +39,13 @@ export class SubscribeButtonFactory {
             const handler = async (newTab: boolean) => {
               const currentFeedReader =
                 await this.storage.get("currentFeedReader");
+              const url = currentFeedReader.link(this.getAttribute("link")!);
               browser.runtime.sendMessage({
                 action: "open-tab",
-                url: currentFeedReader.link(this.getAttribute("link")!),
-                newTab,
+                url,
+                // Links to apps (feed: and such) show an error page when no
+                // app takes them, which must not replace the feed preview
+                newTab: newTab || !/^https?:/.test(url),
               });
             };
             titleSpan.addEventListener(
@@ -109,9 +112,20 @@ export class SubscribeButtonFactory {
               }`;
               el.dataset.id = reader.id;
 
-              const span = document.createElement("span");
-              span.textContent = reader.name + " ";
-              el.appendChild(span);
+              const text = document.createElement("span");
+              text.className = "providers__text";
+              el.appendChild(text);
+
+              const name = document.createElement("span");
+              name.textContent = reader.name;
+              text.appendChild(name);
+
+              if (reader.description) {
+                const caption = document.createElement("span");
+                caption.className = "providers__caption";
+                caption.textContent = reader.description;
+                text.appendChild(caption);
+              }
 
               const img = document.createElement("img");
               img.className = "provider-icon";

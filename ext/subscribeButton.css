@@ -78,11 +78,25 @@
 }
 
 .providers__item {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.3em;
   cursor: default;
   padding: 0.2em 0.2em 0.2em 0.4em;
   white-space: nowrap;
   text-align: right;
+}
+
+.providers__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.providers__caption {
+  font-size: 0.7em;
+  opacity: 0.6;
 }
 
 .providers__item:not(.providers__item--current):hover {
