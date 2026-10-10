@@ -59,6 +59,7 @@ test("adds a feed reader through the dialog", async () => {
   await fill(["Miniflux", "https://miniflux.example.com/bookmarklet?uri=%s", ""]);
   await submit();
   assert.equal(await dialogOpen(), false);
+  await waitFor(async () => (await rows()).length === 1);
   assert.deepEqual(await rows(), [{ name: "Miniflux", url: MINIFLUX.url }]);
 
   const [reader] = await saved();
@@ -88,6 +89,7 @@ test("doesn't save without a name, or a url without %s or %r", async () => {
   await fill([null, "feed:%r", null]);
   await submit();
   assert.equal(await dialogOpen(), false);
+  await waitFor(async () => (await rows()).length === 1);
   assert.deepEqual(await rows(), [{ name: "Miniflux", url: "feed:%r" }]);
 });
 
@@ -99,6 +101,7 @@ test("edits a feed reader in place", async () => {
 
   await fill(["Miniflux (home)", null, null]);
   await submit();
+  await waitFor(async () => (await saved())[0].name === "Miniflux (home)");
   assert.deepEqual(
     (await saved()).map((x) => [x.id, x.name]),
     [["miniflux", "Miniflux (home)"], ["other", "Other"]]
