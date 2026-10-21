@@ -21,6 +21,14 @@ Contributions are welcome. Fill issues, make prs!
 
 ## Changelog
 
+### 0.40
+
+_Coastal Service_
+
+- Added Auto theme, which follows the system's light or dark appearance and is now the default (#93)
+- Restyled feed preview controls
+- Feed preview now fits phone screens
+
 ### 0.39
 
 _A Go Go_
