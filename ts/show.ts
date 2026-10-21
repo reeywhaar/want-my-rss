@@ -13,6 +13,7 @@ import {
 } from "./utils.js";
 import { RSSData, RSSDataItem } from "./rssDataType.js";
 import { ThemeSwitcherFactory } from "./themeSwitcher.js";
+import { ThemeService } from "./theme.js";
 import { feedActivity } from "./activity.js";
 
 const DEFAULT_CHARSET = "utf-8";
@@ -30,6 +31,10 @@ window.customElements.define(
 );
 
 async function main(): Promise<void> {
+  // Before anything renders, so a dark theme doesn't flash light first
+  const themeService = new ThemeService(Storage);
+  themeService.apply(await themeService.get());
+
   let url = decodeURI(window.location.search.substring("?url=".length));
   if (url.indexOf("ext%2Brss%3A") === 0) {
     url = decodeURIComponent(url.substr(12));
@@ -245,17 +250,17 @@ async function render({
   return `
     <div class="controls body__controls">
       <theme-switch class="controls__theme-switch"></theme-switch>
-      <label class="items-sort">
-        <span class="items-sort__label">Sort </span> <select class="items-sort__select">
+      <label class="capsule items-sort">
+        <span class="items-sort__label">Sort</span><select class="items-sort__select">
           ${Sortings.map(
             (sort) =>
               `<option value="${sort}" ${
                 sort === store.sort ? "selected" : ""
               }>${SortingObjects[sort].label}</option>`
           ).join("")}
-        <select>
+        </select>
       </label>
-      <label class="controls__relative-time-switch"><span>Relative time</span><input class="relative-time-checkbox controls__relative-time-checkbox" type="checkbox" ${
+      <label class="capsule controls__relative-time-switch"><span>Relative time</span><input class="relative-time-checkbox controls__relative-time-checkbox" type="checkbox" ${
         store.useRelativeTime === true ? "checked" : ""
       }></label>
       <div class="controls__spacer"></div>

@@ -82,6 +82,13 @@ export class SubscribeButtonFactory {
             provDiv.className = "current-provider";
             provDiv.tabIndex = 0;
             provDiv.addEventListener("focus", () => {
+              // Open towards the free side: the controls wrap on narrow
+              // screens and put the button on the left
+              const rect = this.getBoundingClientRect();
+              providersDiv.classList.toggle(
+                "providers--start",
+                rect.left + rect.width / 2 < window.innerWidth / 2
+              );
               providersDiv.classList.remove("hidden");
             });
             provDiv.addEventListener("blur", () => {

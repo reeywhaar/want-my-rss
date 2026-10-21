@@ -107,7 +107,7 @@ code {
 	background: var(--button-color);
 	border: 1px solid transparent;
 	border-radius: var(--radius);
-	cursor: pointer;
+	cursor: default;
 }
 
 .button:hover {

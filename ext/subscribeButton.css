@@ -9,39 +9,58 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 2px;
+  font-size: 0.8em;
+  border-radius: 999px;
+  background: var(--segmented-color);
 }
 
 .link {
-  display: inline-block;
-  padding: 0.2rem 0.4rem;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 8px 0 10px;
   color: var(--main-color);
-  background: var(--background-color);
-  box-shadow: var(--item-shadow);
+  border-radius: 999px;
   cursor: default;
-  border-top-left-radius: 0.2em;
-  border-bottom-left-radius: 0.2em;
-  border-right: none;
+}
+
+/* White in both themes: reader favicons are drawn for light backgrounds */
+.current-provider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin: 0 2px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: default;
+}
+
+.current-provider > .provider-icon {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  background: none;
+  border-radius: 0;
 }
 
 .link:hover {
-  background-color: hsla(210, 70%, 90%, 1);
-}
-
-.current-provider {
-  display: flex;
-  padding: 0.2em;
-  align-items: center;
-  justify-content: center;
-  background: var(--background-color);
-  box-shadow: var(--item-shadow);
-  cursor: default;
-  border-top-right-radius: 0.2em;
-  border-bottom-right-radius: 0.2em;
+  background: var(--segmented-color);
 }
 
 .current-provider:hover,
 .current-provider:focus {
-  background-color: hsla(210, 70%, 90%, 1);
+  box-shadow: 0 0 0 2px var(--line-color);
+}
+
+.link:focus-visible,
+.current-provider:focus-visible {
+  outline: 2px solid var(--main-color);
+  outline-offset: 1px;
 }
 
 .current-provider:focus {
@@ -60,30 +79,31 @@
 
 .providers {
   position: absolute;
-  top: 1.5rem;
+  top: calc(100% + 4px);
   right: 0;
+  padding: 4px;
   color: var(--main-color);
-  background: var(--background-color);
-  border-radius: 0.2em;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: var(--item-background-color);
+  border-radius: 10px;
+  border: 1px solid var(--line-color);
   box-shadow: var(--item-shadow);
   z-index: 2;
 }
 
-@media screen and (max-width: 600px) {
-  .providers {
-    left: 0;
-    right: auto;
-  }
+
+.providers--start {
+  left: 0;
+  right: auto;
 }
 
 .providers__item {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.3em;
+  gap: 0.4em;
   cursor: default;
-  padding: 0.2em 0.2em 0.2em 0.4em;
+  padding: 0.35em 0.4em 0.35em 0.7em;
+  border-radius: 6px;
   white-space: nowrap;
   text-align: right;
 }
@@ -99,16 +119,21 @@
   opacity: 0.6;
 }
 
-.providers__item:not(.providers__item--current):hover {
-  background-color: hsla(210, 70%, 50%, 0.3);
+/* On white like the button's icon, so dark favicons show on a dark menu */
+.providers__item .provider-icon {
+  width: 20px;
+  height: 20px;
+  padding: 3px;
+  border-radius: 50%;
+}
+
+.providers__item:hover {
+  background-color: var(--segmented-color);
 }
 
 .providers__item--current {
-  background-color: hsla(210, 70%, 50%, 0.1);
-}
-
-.providers__item + .providers__item {
-  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  background-color: var(--segmented-color);
+  font-weight: 600;
 }
 
 .hidden {

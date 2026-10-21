@@ -36,7 +36,7 @@ type RawStorageChange = {
 };
 
 const storageDefaults: RawStorageProperties = {
-  theme: "day",
+  theme: "auto",
   sort: "none",
   feedReaderID: FeedReaders[0].id,
   useRelativeTime: true,

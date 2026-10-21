@@ -23,6 +23,11 @@
   --line-color: rgba(0, 0, 0, 0.09);
   --media-title-color: rgba(0, 0, 0, 0.6);
   --media-placeholder-color: rgba(0, 0, 0, 0.03);
+  --segmented-color: rgba(0, 0, 0, 0.06);
+  --segmented-selected-color: #fff;
+  --checkbox-border-color: rgba(0, 0, 0, 0.2);
+  --checkbox-checked-color: #d4d4db;
+  --checkbox-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2.75 7.4l2.75 2.75 5.75-6' fill='none' stroke='%2315141a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 html {
@@ -98,6 +103,8 @@ a.noline:not(:hover) {
   }
 
   .body__controls {
+    /* Same space above as on the sides */
+    margin-top: 0;
     padding: 0 1rem;
   }
 }
@@ -193,8 +200,9 @@ a.header__main-url:visited:hover {
 
 .controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 1em;
+  gap: 6px;
 }
 
 .controls__theme-switch {
@@ -205,25 +213,57 @@ a.header__main-url:visited:hover {
   flex: 1;
 }
 
-.controls__relative-time-switch {
+/* capsule: a control shaped like the theme switch */
+
+.capsule {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5em;
+  box-sizing: border-box;
+  white-space: nowrap;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 0.8em;
+  border-radius: 999px;
+  background: var(--segmented-color);
   -moz-user-select: none;
   user-select: none;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  font-size: 0.8em;
+}
+
+/* The label part, next to the value or checkbox */
+.capsule > span {
+  color: var(--media-title-color);
+}
+
+.capsule input[type="checkbox"] {
+  appearance: none;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  border: 1.5px solid var(--checkbox-border-color);
+  border-radius: 4px;
+  background: transparent center / 100% no-repeat;
+  cursor: default;
+}
+
+.capsule input[type="checkbox"]:checked {
+  border-color: var(--checkbox-checked-color);
+  background-color: var(--checkbox-checked-color);
+  background-image: var(--checkbox-check);
+}
+
+.capsule input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--main-color);
+  outline-offset: 2px;
 }
 
 /* items-sort */
 
-.items-sort {
-  display: inline-block;
-  font-size: 0.8em;
-}
-
 .items-sort__select {
   background: transparent;
-  color: var(--link-color);
+  color: var(--main-color);
   border: none;
   padding: 0;
   font: inherit;
@@ -310,7 +350,7 @@ a.header__main-url:visited:hover {
   background: var(--media-placeholder-color);
   border: 1px dashed var(--line-color);
   border-radius: var(--item-border-radius);
-  cursor: pointer;
+  cursor: default;
 }
 
 .media-placeholder:hover {
@@ -364,7 +404,7 @@ a.header__main-url:visited:hover {
 .item__expand {
   color: var(--link-color);
   text-align: end;
-  cursor: pointer;
+  cursor: default;
 }
 
 .item__expand:hover {
@@ -482,4 +522,9 @@ html[data-theme="night"] {
   --line-color: rgba(255, 255, 255, 0.4);
   --media-title-color: rgba(255, 255, 255, 0.6);
   --media-placeholder-color: rgba(255, 255, 255, 0.05);
+  --segmented-color: rgba(255, 255, 255, 0.08);
+  --segmented-selected-color: rgba(255, 255, 255, 0.14);
+  --checkbox-border-color: rgba(255, 255, 255, 0.3);
+  --checkbox-checked-color: rgba(255, 255, 255, 0.22);
+  --checkbox-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'%3E%3Cpath d='M2.75 7.4l2.75 2.75 5.75-6' fill='none' stroke='%23fbfbfe' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
