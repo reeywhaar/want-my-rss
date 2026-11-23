@@ -58,10 +58,14 @@ export async function launch({ prefs: extraPrefs = {} } = {}) {
     [
       "--headless", "--no-remote", "--profile", profile,
       "--remote-debugging-port", "0",
-      // Lets BiDi open and script extension pages
+      // Lets BiDi open and script extension pages (older Firefox)
       "--remote-allow-system-access",
     ],
-    { stdio: ["ignore", "ignore", "pipe"], env: { ...process.env, MOZ_HEADLESS: "1" } }
+    {
+      stdio: ["ignore", "ignore", "pipe"],
+      // Newer Firefox only takes it from the environment
+      env: { ...process.env, MOZ_HEADLESS: "1", MOZ_REMOTE_ALLOW_SYSTEM_ACCESS: "1" },
+    }
   );
 
   let ws;
