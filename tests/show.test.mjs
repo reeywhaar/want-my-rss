@@ -103,6 +103,19 @@ test("no activity line without item dates", async () => {
   assert.equal(activity, null);
 });
 
+test("renders the body of JSON Feed items", async () => {
+  pages["/feed.json"] = JSON.stringify({
+    version: "https://jsonfeed.org/version/1.1",
+    title: "JSON",
+    items: [{ id: "1", title: "Post", content_html: "<p>Body text</p>" }],
+  });
+  const { tab, items, error } = await preview("/feed.json");
+  assert.deepEqual({ items, error }, { items: ["Post"], error: null });
+  const body = () => firefox.evaluate(tab, `document.querySelector("#items .item__content")?.textContent.trim()`);
+  await waitFor(async () => (await body()) === "Body text");
+  assert.equal(await body(), "Body text");
+});
+
 test("hides media behind placeholders, loading it only when asked", async () => {
   await firefox.extension(`browser.storage.sync.set({ hideMedia: true })`);
   try {

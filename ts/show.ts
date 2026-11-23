@@ -692,7 +692,9 @@ function parseJSON(base: string, json: any): RSSData {
 
   try {
     data.items = json.items.map((item: any) => {
-      const out = {} as RSSDataItem;
+      const out = {
+        id: Math.random().toFixed(16).substring(2),
+      } as RSSDataItem;
       out.title = t(item, ".title", "Untitled");
       vif(
         () => item.url,
