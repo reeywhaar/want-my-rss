@@ -1,5 +1,12 @@
 import { Disposable } from "./disposable.js";
 import { Storage } from "./storage.js";
+import { feedSchemeTarget } from "./utils.js";
+
+/**
+ * feed: links the extension opens itself, for the system's app (#85),
+ * which must not be taken back to the preview
+ */
+const ownFeedLinks = new Set<string>();
 
 type Handler = (message: {
   action: "open-tab";
@@ -11,6 +18,11 @@ type Handler = (message: {
   (message) => {
     switch (message.action) {
       case "open-tab":
+        if (/^feed:/i.test(message.url)) {
+          const url = message.url;
+          ownFeedLinks.add(url);
+          setTimeout(() => ownFeedLinks.delete(url), 10000);
+        }
         if (message.newTab && message.newTab === true) {
           browser.tabs.create({ url: message.url });
         } else {
@@ -49,6 +61,22 @@ function isFeed(body: string): boolean {
   return false;
 }
 
+/**
+ * Firefox hands feed: links to an outside app without making a request,
+ * and extensions can't register for feed: (bug 1571396), but navigation to
+ * them still starts, so the tab can be taken to the preview instead
+ */
+function feedLinkHandler(
+  details: browser.webNavigation._OnBeforeNavigateDetails
+) {
+  // Frames load feed: links to launch apps, the page itself is left alone
+  if (details.frameId !== 0) return;
+  if (ownFeedLinks.delete(details.url)) return;
+  const url = feedSchemeTarget(details.url);
+  if (!url) return;
+  browser.tabs.update(details.tabId, { url: getRedirectURL(url) });
+}
+
 class RequestInterceptor {
   intercept() {
     browser.webRequest.onHeadersReceived.addListener(
@@ -59,9 +87,13 @@ class RequestInterceptor {
       },
       ["blocking", "responseHeaders"]
     );
+    browser.webNavigation.onBeforeNavigate.addListener(feedLinkHandler, {
+      url: [{ schemes: ["feed"] }],
+    });
     return {
       dispose: () => {
         browser.webRequest.onHeadersReceived.removeListener(this.handler);
+        browser.webNavigation.onBeforeNavigate.removeListener(feedLinkHandler);
       },
     };
   }

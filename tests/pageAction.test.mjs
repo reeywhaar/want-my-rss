@@ -10,6 +10,10 @@ const pages = {
     <link rel="alternate" type="text/html" href="/other.html">
     </head><body>Feeds</body></html>`,
   "/no-feeds.html": `<!doctype html><html><head><title>No feeds</title></head><body>No feeds</body></html>`,
+  "/feed-scheme.html": `<!doctype html><html><head><title>feed: links</title>
+    <link rel="alternate" type="application/rss+xml" href="feed://example.com/releases.rss">
+    <link rel="alternate" type="application/atom+xml" href="feed:http://example.com/atom.xml">
+    </head><body><a href="feed://example.com/releases.rss" style="font-size: 40px">Releases</a></body></html>`,
 };
 
 let firefox;
@@ -45,6 +49,40 @@ test("shows every feed testdata/index.html links, even broken ones", async () =>
     { type: "application/rss+xml", url: `${base}/testdata/missing.xml`, title: null },
     { type: "application/json", url: `${base}/testdata/broken.json`, title: null },
   ]);
+});
+
+test("gives feed: links as the http(s) addresses they stand for (#94)", async () => {
+  await firefox.newTab(`${base}/feed-scheme.html`);
+  const feeds = await waitFor(() => firefox.pageActionFeeds(`${base}/feed-scheme.html`));
+  assert.deepEqual(
+    feeds?.map((x) => x.url),
+    ["https://example.com/releases.rss", "http://example.com/atom.xml"]
+  );
+});
+
+test("opens clicked feed: links in the preview (#94)", async () => {
+  const tab = await firefox.newTab(`${base}/feed-scheme.html`);
+  const link = await firefox.evaluate(tab, `document.querySelector("a").getBoundingClientRect().toJSON()`);
+  await firefox.send("input.performActions", {
+    context: tab,
+    actions: [
+      {
+        type: "pointer",
+        id: "mouse",
+        parameters: { pointerType: "mouse" },
+        actions: [
+          { type: "pointerMove", x: Math.round(link.x + 10), y: Math.round(link.y + link.height / 2) },
+          { type: "pointerDown", button: 0 },
+          { type: "pointerUp", button: 0 },
+        ],
+      },
+    ],
+  });
+  const url = await waitFor(async () => {
+    const href = await firefox.evaluate(tab, "location.href").catch(() => null);
+    return href?.includes("show.html") ? href : null;
+  });
+  assert.equal(url, firefox.extUrl("show.html?url=https://example.com/releases.rss"));
 });
 
 test("hides the icon when the page has no feeds", async () => {

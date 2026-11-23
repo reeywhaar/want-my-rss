@@ -20,7 +20,8 @@
     "<all_urls>",
     "storage",
     "webRequest",
-    "webRequestBlocking"
+    "webRequestBlocking",
+    "webNavigation"
   ],
   "web_accessible_resources": [
     "show.html"

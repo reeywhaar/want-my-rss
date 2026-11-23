@@ -1,5 +1,14 @@
 import { Return as PageReturn, Data as PageData } from "./pageReturnType.js";
 import { Storage } from "./storage.js";
+import { feedSchemeTarget } from "./utils.js";
+
+/**
+ * Some sites advertise feeds as feed: urls, which the preview can't fetch
+ * and readers don't take
+ */
+function withoutFeedScheme(feed: PageData): PageData {
+  return { ...feed, url: feedSchemeTarget(feed.url) ?? feed.url };
+}
 
 /**
  * Shows the page's feeds on the toolbar button and, unless the user
@@ -39,7 +48,7 @@ const handler = async (id: number) => {
       runAt: "document_end",
     })
     .then((x: object[]) => {
-      setAction(id, (x[0] as PageReturn).data);
+      setAction(id, (x[0] as PageReturn).data.map(withoutFeedScheme));
     })
     .catch(() => {
       setAction(id, []);

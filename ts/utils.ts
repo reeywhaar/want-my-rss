@@ -139,3 +139,16 @@ export function withDomain(base: string, url: string): string {
   if (isRelativeUrl(url)) return [base, url].join("");
   return url;
 }
+
+/**
+ * The http(s) address a feed: url stands for: feed://host/path is taken as
+ * https://host/path, feed:https://host/path as the address it wraps.
+ * Null for anything else.
+ */
+export function feedSchemeTarget(url: string): string | null {
+  const rest = /^feed:(.*)$/i.exec(url)?.[1];
+  if (rest === undefined) return null;
+  if (/^https?:\/\//i.test(rest)) return rest;
+  if (/^\/\/[^/]/.test(rest)) return "https:" + rest;
+  return null;
+}
