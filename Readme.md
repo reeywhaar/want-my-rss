@@ -21,6 +21,15 @@ Contributions are welcome. Fill issues, make prs!
 
 ## Changelog
 
+### 0.41
+
+_Don't chain my heart_
+
+- feed: links (like feed://example.com/rss.xml) now open in the feed preview instead of an outside app (#94)
+- Fixed feed preview and feed readers for pages that list their feeds as feed: links (#94)
+- Fixed JSON feeds showing posts without their content
+- Asks for a new permission, "Access browser activity during navigation", which it needs to catch feed: links
+
 ### 0.40
 
 _Coastal Service_
